@@ -9,12 +9,13 @@ import ImageGallery from './components/ImageGallery';
 class App extends Component {
   state = {
     searchQuery: '',
-    page: 1,
+    buttonVisible: false,
   };
 
   handleFormSubmit = searchQuery => {
     this.setState({ searchQuery });
   };
+
   render() {
     const { searchQuery } = this.state;
     return (
