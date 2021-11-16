@@ -1,16 +1,13 @@
 import { Component } from 'react';
 import { toast } from 'react-toastify';
-import { ImSpinner } from 'react-icons/im';
+import Loader from 'react-loader-spinner';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import s from './ImageGallery.module.css';
 import fetchAPI from '../../services/fetchApi';
 import ImageGalleryItem from '../ImageGalleryItem';
 import ImagePendingView from '../ImagePendingView';
+import Button from '../Button';
 
-const Status = {
-  IDLE: 'idle',
-  PENDING: 'pending',
-  RESOLVED: 'resolved',
-};
 const API_KEY = '23600792-c35e54b22aba5a82a8a51cd77';
 const BASE_URL = 'https://pixabay.com/api';
 
@@ -18,63 +15,130 @@ export default class ImageGallery extends Component {
   state = {
     page: 1,
     result: [],
-    status: Status.IDLE,
+    showButton: false,
+    showLoader: false,
   };
 
   async componentDidUpdate(prevProps, prevState) {
     const prevQuery = prevProps.searchQuery;
     const nextQuery = this.props.searchQuery;
-    const url = `${BASE_URL}/?image_type=photo&orientation=horizontal&q=${nextQuery}&page=${this.state.page}&per_page=12&key=${API_KEY}`;
+    const url = `${BASE_URL}/?image_type=photo&orientation=horizontal&q=${nextQuery}&page=1&per_page=12&key=${API_KEY}`;
 
     if (prevQuery !== nextQuery) {
-      this.setState({ status: Status.PENDING });
+      this.setState({
+        showLoader: true,
+        page: 2,
+      });
 
       try {
         const { hits } = await fetchAPI(url);
+
         if (hits.length === 0) {
           throw new Error(`No images found for "${nextQuery}". Try again.`);
         }
 
-        this.setState({ result: hits, status: Status.RESOLVED });
+        this.setState({ showButton: true, showLoader: false, result: hits });
       } catch (error) {
         toast.error(error.message);
-        this.setState({ status: Status.IDLE });
+        this.setState({ showLoader: false });
       }
     }
   }
 
+  onButtonClick = async () => {
+    this.setState({
+      showLoader: true,
+    });
+    const url = `${BASE_URL}/?image_type=photo&orientation=horizontal&q=${this.props.searchQuery}&page=${this.state.page}&per_page=12&key=${API_KEY}`;
+
+    try {
+      const { hits } = await fetchAPI(url);
+
+      if (hits.length === 0) {
+        this.setState({ showLoader: false, showButton: false });
+        throw new Error(
+          `No more images found for "${this.props.searchQuery}".`,
+        );
+      }
+
+      this.setState(prevState => ({
+        showButton: true,
+        showLoader: false,
+        result: [...prevState.result, ...hits],
+        page: prevState.page + 1,
+      }));
+    } catch (error) {
+      toast.error(error.message);
+      this.setState({ showLoader: false });
+    }
+  };
+
   render() {
-    const { result, status } = this.state;
+    const { result, showButton, showLoader } = this.state;
 
-    if (status === Status.IDLE) {
-      return <div></div>;
-    }
-
-    if (status === Status.PENDING) {
-      return (
-        <>
-          <ul className={s.gallery}>
-            {result.map(image => (
-              <li key={image.id} className={s.item}>
-                <ImagePendingView />
-              </li>
-            ))}
-          </ul>
-          <ImSpinner size="32" />
-        </>
-      );
-    }
-
-    if (status === Status.RESOLVED) {
-      return (
+    return (
+      <div>
         <ul className={s.gallery}>
           {result.map(image => (
             <li key={image.id} className={s.item}>
               <ImageGalleryItem src={image.webformatURL} alt={image.tags} />
             </li>
           ))}
+          {showLoader &&
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((image, index) => (
+              <li key={index} className={s.item}>
+                <ImagePendingView />
+              </li>
+            ))}
         </ul>
-      );
-    }
+        {showLoader && (
+          <Loader type="ThreeDots" color="#995471" height={100} width={100} />
+        )}
+        {showButton && <Button onClick={this.onButtonClick} />}
+      </div>
+    );
+    // if() return (
+    //       <div>
+    //         <ul className={s.gallery}>
+    //           {result.map(image => (
+    //             <li key={image.id} className={s.item}>
+    //               <ImageGalleryItem src={image.webformatURL} alt={image.tags} />
+    //             </li>
+    //           ))}
+    //           {showLoader &&
+    //             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((image, index) => (
+    //               <li key={index} className={s.item}>
+    //                 <ImagePendingView />
+    //               </li>
+    //             ))}
+    //         </ul>
+    //         {showLoader && (
+    //           <Loader type="ThreeDots" color="#995471" height={100} width={100} />
+    //         )}
+    //         {showButton && <Button onClick={this.onButtonClick} />}
+    //       </div>
+    //     );
+
+    //     if() return (
+    //       <div>
+    //         <ul className={s.gallery}>
+    //           {result.map(image => (
+    //             <li key={image.id} className={s.item}>
+    //               <ImageGalleryItem src={image.webformatURL} alt={image.tags} />
+    //             </li>
+    //           ))}
+    //           {showLoader &&
+    //             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((image, index) => (
+    //               <li key={index} className={s.item}>
+    //                 <ImagePendingView />
+    //               </li>
+    //             ))}
+    //         </ul>
+    //         {showLoader && (
+    //           <Loader type="ThreeDots" color="#995471" height={100} width={100} />
+    //         )}
+    //         {showButton && <Button onClick={this.onButtonClick} />}
+    //       </div>
+    //     );
   }
 }

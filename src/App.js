@@ -9,7 +9,6 @@ import ImageGallery from './components/ImageGallery';
 class App extends Component {
   state = {
     searchQuery: '',
-    buttonVisible: false,
   };
 
   handleFormSubmit = searchQuery => {
