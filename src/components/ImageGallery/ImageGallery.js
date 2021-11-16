@@ -26,6 +26,8 @@ export default class ImageGallery extends Component {
 
     if (prevQuery !== nextQuery) {
       this.setState({
+        result: [],
+        showButton: false,
         showLoader: true,
         page: 2,
       });
@@ -35,6 +37,17 @@ export default class ImageGallery extends Component {
 
         if (hits.length === 0) {
           throw new Error(`No images found for "${nextQuery}". Try again.`);
+        }
+
+        if (hits.length < 12) {
+          this.setState({
+            showLoader: false,
+            showButton: false,
+            result: hits,
+          });
+          throw new Error(
+            `No more images found for "${this.props.searchQuery}".`,
+          );
         }
 
         this.setState({ showButton: true, showLoader: false, result: hits });
@@ -56,6 +69,17 @@ export default class ImageGallery extends Component {
 
       if (hits.length === 0) {
         this.setState({ showLoader: false, showButton: false });
+        throw new Error(
+          `No more images found for "${this.props.searchQuery}".`,
+        );
+      }
+
+      if (hits.length < 12) {
+        this.setState(prevState => ({
+          showLoader: false,
+          showButton: false,
+          result: [...prevState.result, ...hits],
+        }));
         throw new Error(
           `No more images found for "${this.props.searchQuery}".`,
         );
@@ -92,53 +116,16 @@ export default class ImageGallery extends Component {
             ))}
         </ul>
         {showLoader && (
-          <Loader type="ThreeDots" color="#995471" height={100} width={100} />
+          <Loader
+            type="ThreeDots"
+            color="#995471"
+            height={100}
+            width={100}
+            style={{ textAlign: 'center' }}
+          />
         )}
         {showButton && <Button onClick={this.onButtonClick} />}
       </div>
     );
-    // if() return (
-    //       <div>
-    //         <ul className={s.gallery}>
-    //           {result.map(image => (
-    //             <li key={image.id} className={s.item}>
-    //               <ImageGalleryItem src={image.webformatURL} alt={image.tags} />
-    //             </li>
-    //           ))}
-    //           {showLoader &&
-    //             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((image, index) => (
-    //               <li key={index} className={s.item}>
-    //                 <ImagePendingView />
-    //               </li>
-    //             ))}
-    //         </ul>
-    //         {showLoader && (
-    //           <Loader type="ThreeDots" color="#995471" height={100} width={100} />
-    //         )}
-    //         {showButton && <Button onClick={this.onButtonClick} />}
-    //       </div>
-    //     );
-
-    //     if() return (
-    //       <div>
-    //         <ul className={s.gallery}>
-    //           {result.map(image => (
-    //             <li key={image.id} className={s.item}>
-    //               <ImageGalleryItem src={image.webformatURL} alt={image.tags} />
-    //             </li>
-    //           ))}
-    //           {showLoader &&
-    //             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((image, index) => (
-    //               <li key={index} className={s.item}>
-    //                 <ImagePendingView />
-    //               </li>
-    //             ))}
-    //         </ul>
-    //         {showLoader && (
-    //           <Loader type="ThreeDots" color="#995471" height={100} width={100} />
-    //         )}
-    //         {showButton && <Button onClick={this.onButtonClick} />}
-    //       </div>
-    //     );
   }
 }
