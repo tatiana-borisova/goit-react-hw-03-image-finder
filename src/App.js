@@ -5,6 +5,7 @@ import fetchAPI from './services/fetchApi';
 import Searchbar from './components/Searchbar';
 import ImageGallery from './components/ImageGallery';
 import Button from './components/Button';
+import Modal from './components/Modal';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
@@ -21,7 +22,9 @@ class App extends Component {
     searchQuery: '',
     page: 1,
     result: [],
+    showModal: false,
     status: Status.IDLE,
+    largeImage: null,
   };
 
   async componentDidUpdate(prevProps, prevState) {
@@ -97,12 +100,19 @@ class App extends Component {
     this.setState({ searchQuery });
   };
 
+  toggleModal = largeImage => {
+    this.setState(prevState => ({
+      largeImage,
+      showModal: !prevState.showModal,
+    }));
+  };
+
   render() {
-    const { result, status } = this.state;
+    const { result, status, showModal, largeImage } = this.state;
     return (
       <>
         <Searchbar onSubmit={this.handleFormSubmit} />
-        <ImageGallery result={result} />
+        <ImageGallery result={result} onClick={this.toggleModal} />
         {status === Status.RESOLVED && <Button onClick={this.onButtonClick} />}
         {status === Status.PENDING && (
           <Loader
@@ -111,6 +121,9 @@ class App extends Component {
             width={100}
             style={{ textAlign: 'center' }}
           />
+        )}
+        {showModal && (
+          <Modal largeImage={largeImage} onClick={this.toggleModal} />
         )}
         <ToastContainer position="top-right" autoClose={3000} />
       </>
