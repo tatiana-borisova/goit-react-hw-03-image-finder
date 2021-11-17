@@ -62,7 +62,7 @@ class App extends Component {
     }
   }
 
-  onButtonClick = async () => {
+  onLoadMoreClick = async () => {
     const { searchQuery, page } = this.state;
 
     this.setState({
@@ -113,18 +113,11 @@ class App extends Component {
       <>
         <Searchbar onSubmit={this.handleFormSubmit} />
         <ImageGallery result={result} onClick={this.toggleModal} />
-        {status === Status.RESOLVED && <Button onClick={this.onButtonClick} />}
+        {status === Status.RESOLVED && <Button onClick={this.onLoadMoreClick} />}
         {status === Status.PENDING && (
-          <Loader
-            type="ThreeDots"
-            color="#995471"
-            width={100}
-            style={{ textAlign: 'center' }}
-          />
+          <Loader type="ThreeDots" color="#995471" width={100} style={{ textAlign: 'center' }} />
         )}
-        {showModal && (
-          <Modal largeImage={largeImage} onClick={this.toggleModal} />
-        )}
+        {showModal && <Modal largeImage={largeImage} onClick={this.toggleModal} />}
         <ToastContainer position="top-right" autoClose={3000} />
       </>
     );
